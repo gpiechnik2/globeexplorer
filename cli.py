@@ -1,6 +1,8 @@
 import click
 
 
+output = Output()
+
 @click.group()
 @click.version_option('1.0')
 def cli():
@@ -28,10 +30,8 @@ def run(scenario, url, wordlist, subfinder, ffuf):
     wordlists = ['basic', 'extended', 'full', 'test']
     true_false_choices = ['true', 'false', True, False]
     if 'http' not in url:
-        print('{}  Please provide http or https link{}'.format(
-            Colors.RED, Colors.OFF
-        ))
-    elif wordlist not in wordlists:
+        print(output.red('Please provide http or https link'))
+    if wordlist not in wordlists:
         print(
             '{}  The given wordlist is not available. Available wordlists: basic, extended, full{}'.format(
                 Colors.RED,

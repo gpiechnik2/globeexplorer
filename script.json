@@ -1,0 +1,98 @@
+{
+    "scenarios": [
+        {
+            "name": "security headers",
+            "module_name": "securityheaders",
+            "commands": "python3 securityheaders.py GLITCH_URL",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "WARN"
+                }
+            ],
+            "single": true
+        },
+        {
+            "name": "SSLyze",
+            "commands": "sslyze GLITCH_WITHOUT_HTTPS",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "VULNERABLE -"
+                }
+            ],
+            "single": true
+        },
+        {
+            "name": "CRLF injection scanner",
+            "module_name": "CRLF-Injection-Scanner",
+            "commands":  "python3 crlf.py scan -u \"GLITCH_URL\"",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "CRLF injection detected at the following URLs:"
+                }
+            ],
+            "url_type": "params"
+        },
+        {
+            "name": "Damn small JS scanner",
+            "module_name": "DSJS",
+            "commands": "python3 dsjs.py -u GLITCH_URL",
+            "assertions": [
+                {
+                    "type": "not_contain",
+                    "value": "no vulnerabilities found"
+                }
+            ],
+            "single": true
+        },
+        {
+            "name": "Corsy CORS scanner",
+            "module_name": "Corsy",
+            "commands": "python3 corsy.py -u GLITCH_URL",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "Severity"
+                }
+            ],
+            "url_type": "params"
+        },
+        {
+            "name": "secretfinder",
+            "module_name": "secretfinder",
+            "commands": "python3 SecretFinder.py -i GLITCH_URL -o cli -e",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "->"
+                }
+            ],
+            "single": true
+        },
+        {
+            "name": "nmap log4shell",
+            "module_name": "nse-log4shell",
+            "commands": "nmap -sV -T4 -v --script=/ GLITCH_WITHOUT_HTTPS",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "VULNERABLE"
+                }
+            ],
+            "single": true
+        },
+        {
+            "name": "nmap vulners.nse",
+            "commands": "nmap GLITCH_WITHOUT_HTTPS --script=vulners.nse -sV",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "VULNERABLE"
+                }
+            ],
+            "single": true
+        }
+    ]
+}

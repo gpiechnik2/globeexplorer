@@ -2,11 +2,15 @@ from datetime import datetime
 import threading
 import re
 import subprocess
+import sys
 
 from database import Database
 from output import Output
 from files import Files
 from utils import get_https_domain, get_without_https_domain, get_string_without_special_chars
+from crawler import get_links
+from scenario import Scenario
+
 
 threadLimiter = threading.BoundedSemaphore(10)
 
@@ -122,52 +126,76 @@ class Thread:
 
 
 class Threads:
-    def __init__(self, name, scenario_type, module_name, command, assertions, urls):
-        # TODO: change static urls with dynamic
-        self.urls = ['https://dsadsa.pl', 'https://aa.pl', 'https://dsadsssdsa.pl']
-        self.name = name
-        self.scenario_type = scenario_type
-        self.module_name = module_name
-        self.command = command
-        self.assertions = assertions
+    def __init__(self, scenarios):
+        self.scenarios = scenarios
 
-    def get_log_name(self, index, url):
-        url_without_characters
-        return self.name + '_{}_{}'.format(url, index).replace(' ', '')
-
+    def get_urls(self):
+        database = Database()
+        return database.get_urls() 
+    
     def start_threads(self):
-        for index, url in urls:
-            # TODO: there should be checking url_type
-            log_name = self.get_log_name(index, get_string_without_special_chars(url))
-            thread = Thread(name, url, scenario_type, module_name, command, assertions, log_name)
-            thread.add_thread()
+        urls = self.get_urls()
+        
+        for scenario in self.scenarios:            
+            scenario_obj = Scenario(scenario)
+            name = scenario_obj.get_name()
+            url_type = scenario_obj.url_type()
+            module_name = scenario_obj.get_command()
+            assertions = scenario_obj.get_assertions()
+
+            for index, url in urls:
+                log_name = scenario_obj.get_log_name(index, url)
+                thread = Thread(name, url, url_type, module_name, command, assertions, log_name)
+                validate_url = thread.validate_url()
+                if url_type in validate_url:
+                    thread.add_thread()
     
 
 class PreconditionThreads:
-    def __init__(self, url, subfinder_enabled, ffuf_enabled, gospider_enabled, wordlist):
+    def __init__(self, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, debug):
         self.subfinder_enabled = subfinder_enabled
         self.ffuf_enabled = ffuf_enabled
-        self.gospider_enabled = gospider_enabled
+        self.crawler_enabled = crawler_enabled
         self.url = url
         self.wordlist = wordlist
+        self.debug = debug
         self.output = Output()
         self.files = Files()
         self.database = Database()
     
+    def debug_command(self, process):
+        # TODO: create debug version
+        if self.debug:
+            while process.stdout.readable():
+                line = process.stdout.readline()
+                if not line:
+                    break
+                another_line = str(line.strip())
+                print(another_line)
+
     def run_command(self, command):
+        print('running: {}'.format(command))
         process = subprocess.Popen(
             command,
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
+        
+        # self.debug_command(process)
         process.wait()
         output, error = process.communicate()
+        print(output)
+        print(error)
+        print(":))")
         return output, error
 
-    def replace_str_in_list(list_of_strings, old_string, new_string):
+    def replace_str_in_list(self, list_of_strings, old_string, new_string):
         new_list_of_strings = []
         for word in list_of_strings:
-            word.replace(old_string, new_string)
+            new_word = word.replace(old_string, new_string)
+            new_list_of_strings.append(new_word)
+
+        return new_list_of_strings
 
     def run_subfinder(self, command):
         if self.subfinder_enabled:
@@ -200,41 +228,33 @@ class PreconditionThreads:
             for domain in domains:
                 domain = get_https_domain(domain)
                 domain_without_special_characters = get_string_without_special_chars(domain)
-                command = replace_str_in_list(command, 'GLOBEEXPLORER_DOMAIN', domain)
-                command = replace_str_in_list(command, 'FFUF_DOMAIN', domain_without_special_characters)
-                output, error = self.run_command(command)
+                new_command = self.replace_str_in_list(command, 'GLOBEEXPLORER_DOMAIN', domain)
+                new_command = self.replace_str_in_list(new_command, 'FFUF_DOMAIN', domain_without_special_characters)
+                output, error = self.run_command(new_command)
                 
                 if error:
-                    self.output.print_error_while_running_command(command, error)
+                    self.output.print_error_while_running_command(new_command, error)
         else:
             self.database.add_url(self.url)
         
         self.files.add_urls_from_ffuf_file()
     
-    def run_gospider(self, command):
-        if self.gospider_enabled:
-            self.output.print_initial_module_started('gospider', 'web crawling tool')
+    def run_crawler(self):
+        if self.crawler_enabled:
+            self.output.print_initial_module_started('crawler', 'web crawling tool')
             domains = self.database.get_domains() if self.subfinder_enabled else [self.url]
             for domain in domains:
-                domain = get_https_domain(domain)
+                domain_without_https = get_without_https_domain(domain)
+                domain_with_https = get_https_domain(domain)
                 domain_without_special_characters = get_string_without_special_chars(domain)
-                command = replace_str_in_list(command, 'GLOBEEXPLORER_DOMAIN', domain)
-                command = replace_str_in_list(command, 'GOSPIDER_DOMAIN', domain_without_special_characters)
-                output, error = self.run_command(command)
- 
-                if error:
-                    self.output.print_error_while_running_command(command, error)
-
-        self.files.add_urls_from_gospider_files()
+                urls = get_links(domain_without_https, domain)
+                self.files.add_urls_from_list(urls)
 
     def start_preconditions(self):
         url_without_https = get_without_https_domain(self.url)
         subfinder_cmd = ['subfinder', '-d', url_without_https]
         ffuf_cmd = ['ffuf', '-u', 'GLOBEEXPLORER_DOMAIN' + '/FUZZ', '-w', self.files.get_wordlist_path(self.wordlist), '-o', self.files.get_ffuf_directory_path() + '/FFUF_DOMAIN.json', '-of', 'json']
-        gospider_cmd = ['go', 'run', './modules/main.go', '-s', 'GLOBEEXPLORER_DOMAIN', '-d', '0', '--base', '--json', '-o', self.files.get_gospider_directory_path() + '/GOSPIDER_DOMAIN']
 
         self.run_subfinder(subfinder_cmd)    
         self.run_ffuf(ffuf_cmd)
-        self.run_gospider(gospider_cmd)
-        
-
+        self.run_crawler()

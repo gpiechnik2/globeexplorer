@@ -44,9 +44,12 @@ class Database:
         con = self.connect()
         cur = self.cursor(con)
         time = self.get_time()
+
         cur.execute("INSERT INTO domains VALUES (?,?)", (
             time, domain
         ))
+
+        print('dodano {}'.format(domain))
 
         self.save_and_close(con)
 
@@ -91,7 +94,7 @@ class Database:
 
         domains = cur.execute('SELECT domain FROM domains').fetchall()
         self.save_and_close(con)
-        
+
         return domains
 
     def get_urls(self):
