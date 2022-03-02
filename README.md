@@ -1,31 +1,50 @@
-# globeexplorer
+<h1 align="center">
+  <img src="logo.jpg" alt="globeexplorer" width="200px"></a>
+  <br>
+</h1>
+
+<h4 align="center">A tool for performing automated penetration tests based on a prepared test script.</h4>
+      
+<p align="center">
+  <a href="#usage">Usage</a> •
+  <a href="#features">Features</a> •
+  <a href="#setup">Setup</a> •
+  <a href="#dockerfile">Dockerfile</a> •
+  <a href="#running">Running</a> •
+  <a href="#todo">Todo</a> •
+  <a href="#license">License</a> •
+</p>
+
+---
+
+
 A tool for performing automated penetration tests based on a prepared test script.
 
-## Usage
+# Usage
 
-### Pentesting
+## Pentesting
 
-### Continous Integration & Continous Security
+## Continous Integration & Continous Security
 
-### Bugbounties
+## Bugbounties
 
-## Features
+# Features
 
-## Setup
+# Setup
 
-## Dockerfile
+# Dockerfile
 
-## Running
+# Running
 
-### Modules
+## Modules
 
-### Scenario file
+## Scenario file
 
-### Commands
+## Commands
 
 
 
-## todo
+# todo
 - clearing /tmp and database
 - validate scenario file
 - make crawling asynchronous
@@ -34,5 +53,5 @@ A tool for performing automated penetration tests based on a prepared test scrip
 - setup.py
 - cli.py
 
-## License
+# License
 Not included yet
