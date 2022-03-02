@@ -3,7 +3,7 @@
   <br>
 </h1>
 
-<h4 align="center">A tool for performing automated penetration tests based on a prepared test script.</h4>
+<h4 align="center">A tool for performing automated penetration tests based on a prepared scenario script.</h4>
       
 <p align="center">
   <a href="#usage">Usage</a> •
