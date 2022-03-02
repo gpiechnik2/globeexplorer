@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="logo.jpg" alt="globeexplorer" width="200px"></a>
+  <img src="logo.jpg" alt="globeexplorer" width="260px"></a>
   <br>
 </h1>
 
