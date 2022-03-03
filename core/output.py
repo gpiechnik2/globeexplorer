@@ -36,54 +36,43 @@ class Output:
     def get_purple_semicolon(self):
         return self.purple(';')
 
-    def print_info(self):
-        print("-------------------------------------------------------------")
-        print("  globeexplorer v1.0 by @gpiechnik2")
-        print("-------------------------------------------------------------")
-
     def print_logo(self):
         print("""
+     _     _                   _                 
+ ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
+| . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
+|_  |_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2
+|___|                     |_|                     
+""")
 
-                   *#&#,                 
-          .%,&#. .&%%%%%%(((/&          
-       &/#%%%%/#%%%*/(#((((/////*&      
-     &&&%%%%%%%(%%(%#(((//////****,%    
-   &&%%%%%%%%%#///////////******,,,,,&  
-  %%%%%%%%%%*/%%%%*/#/*****%*,,,,,,***% 
- &&%%%%%%%#,*****(%*#%%#*,,,,,,,******/&
-.&%%%%%%/,,,,,,,,,,,,,,,%,,****%%%//%%%/
-%%%%%%%%*****************%***%%%%%%/%%%&
- /&%%%%%%*/**************////%%%%%%%%%%&
- %//%%%%%%%%%%%////////////#%%%%%%%%%%%&
-  #/%%%%%%%%%%%%//////////%%%%%%%%%%%%& 
-   &&%%%%%%%%%%%%/////////%%/%%%%%%%%&  
-     &%%%%%%%%%%%///////%%((%%%%%%&&    
-       &&&%%%%%%%%%//(%%%%%%%%%%%/      
-           &%%%%%%%%%%%%%%%%&&    
-                           
-    """)
+    def print_data(self, domain, ):
 
-    def print_added_to_queue(self, name, url, command):
+
+    def print_added_to_queue(self, urls_quantity):
         purple_semicolon = self.get_purple_semicolon()
-        print('🌐 [{}] {} {}{} {}{} {}{}'.format(
+        print('{} [{}] {} {}{}'.format(
+            self.purple('⌾'),
             self.get_time(),
             'Added to the queue....:',
-            name,
-            purple_semicolon,
-            url,
-            purple_semicolon,
-            command,
+            str(urls_quantity) + ' tests',
+            purple_semicolon
+        ))
+        print('{} [{}] {} {}'.format(
+            self.purple('⌾'),
+            self.get_time(),
+            'Please be patient. If a risk or vulnerability is discovered, we will let you know',
             purple_semicolon
         ))
 
-    def print_vulnerability_found(self, name, url, assertion):
+    def print_vulnerability_found(self, name, process_args, assertion):
         purple_semicolon = self.get_purple_semicolon()
-        print('🌐 [{}] {} {}{} {}{} {}{} {}{}'.format(
+        print('{} [{}] {} {}{} {}{} {}{} {}{}'.format(
+            self.purple('⌾'),
             self.get_time(),
             self.red('Vulnerability found...:'),
             name,
             purple_semicolon,
-            url,
+            process_args,
             purple_semicolon,
             assertion['type'],
             purple_semicolon,
@@ -91,14 +80,15 @@ class Output:
             purple_semicolon
         ))
 
-    def print_risk_found(self, name, url, assertion):
+    def print_risk_found(self, name, process_args, assertion):
         purple_semicolon = self.get_purple_semicolon()
-        print('🌐 [{}] {} {}{} {}{} {}{} {}{}'.format(
+        print('{} [{}] {} {}{} {}{} {}{} {}{}'.format(
+            self.purple('⌾'),
             self.get_time(),
             self.red('Risk found............:'),
             name,
             purple_semicolon,
-            url,
+            process_args,
             purple_semicolon,
             assertion['type'],
             purple_semicolon,
@@ -106,15 +96,16 @@ class Output:
             purple_semicolon
         ))
 
-    def print_risk_or_vulnerability_found(self, scenario_type, name, url, assertion):
+    def print_risk_or_vulnerability_found(self, scenario_type, name, process_args, assertion):
         if scenario_type == 'risk':
-            self.output.print_risk_found(name, url, assertion)
+            self.print_risk_found(name, process_args, assertion)
         elif scenario_type == 'vulnerability':
-            self.output.print_vulnerability_found(name, url, assertion)    
+            self.print_vulnerability_found(name, process_args, assertion)    
 
     def print_initial_module_started(self, name, description):
         purple_semicolon = self.get_purple_semicolon()
-        print('🌐 [{}] {} {}{} {}{}'.format(
+        print('{} [{}] {} {}{} {}{}'.format(
+            self.purple('⌾'),
             self.get_time(),
             'Initial module started:',
             name,
@@ -125,7 +116,8 @@ class Output:
 
     def print_error_while_running_command(self, command, error):
         purple_semicolon = self.get_purple_semicolon()
-        print('🌐 [{}] {} {}{} {}{}'.format(
+        print('{} [{}] {} {}{} {}{}'.format(
+            self.purple('⌾'),
             self.get_time(),
             self.red('Error while running...:'),
             command,
@@ -133,3 +125,7 @@ class Output:
             error,
             purple_semicolon
         ))
+
+    def print_error_end_exit(error):
+        print(self.red(error))
+        exit()

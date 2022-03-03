@@ -2,36 +2,25 @@ from datetime import datetime
 import threading
 import re
 import subprocess
+from subprocess import Popen, PIPE, STDOUT
+from itertools import islice
 import sys
+from time import sleep
 
-from database import Database
-from output import Output
-from files import Files
-from utils import get_https_domain, get_without_https_domain, get_string_without_special_chars
-from crawler import get_links
-from scenario import Scenario
+from core.database import Database
+from core.output import Output
+from core.files import Files
+from core.utils import get_https_domain, get_without_https_domain, get_string_without_special_chars, get_random_file_name, construct_command
+from core.crawler import get_links
+from core.scenario import Scenario
 
 
-threadLimiter = threading.BoundedSemaphore(10)
-
-class ThreadWithResult(threading.Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None):
-        def function():
-            self.result = target(*args, **kwargs)
-        super().__init__(group=group, target=function, name=name, daemon=daemon)
-
-class Thread: 
-    def __init__(self, name, url, url_type, scenario_type, module_name, command, assertions, log_name):
-        self.name = name
-        self.url = url
-        self.url_type = url_type
-        self.scenario_type = scenario_type
-        self.module_name = module_name
-        self.command = command
-        self.assertions = assertions
-        self.log_name = log_name
-        self.output = Output()
+class Threads:
+    def __init__(self, scenarios):
+        self.scenarios = scenarios
         self.files = Files()
+        self.output = Output()
+        self.database = Database()
 
     def delete_asnci_excape_squences_from_output(self, output):
         ansi_escape = re.compile(r'''
@@ -45,148 +34,123 @@ class Thread:
                 [@-~]   # Final byte
             )
         ''', re.VERBOSE)
-        return ansi_escape.sub('', output)
-
-    def get_last_element_of_url(self, url):
-        return url.rsplit('/', 1)[-1]
-
-    def validate_url(self):
-        last_part_of_url = self.get_last_element_of_url(self.url)
-
-        if '?' in url and '.js' in url:
-            return ['params', 'js', 'static']
-        elif '?' in url and '.' in last_part_of_url:
-            return ['params', 'static']
-        elif '?' in url:
-            return ['params']
-        elif '.html' in last_part_of_url or '.htm' in last_part_of_url:
-            return ['static', 'simple']
-        elif '.js' in url:
-            return ['js', 'static']
-        elif '.' in last_part_of_url:
-            return ['static']
-        elif not '?' in url and not '.' in last_part_of_url:
-            return ['simple']
-        else:
-            return ['all']
-
-    def run_command(self, commands):
-        validate_url = self.validate_url()
-        if validate_url in self.url_type or url_type == None:
-            try:
-                if not self.module_name:
-                    self.module_name = '/'
-
-                modules_path = '{}'.format(self.files.get_modules_directory_path())
-                process = subprocess.Popen(
-                    command.split(),
-                    shell=False,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    cwd=modules_path +
-                    self.module_name)
-
-                process.wait()
-                output, error = process.communicate()
-
-                if error:
-                    error_data = self.delete_asnci_excape_squences_from_output(error)
-                    self.files.create_error_file(error_data)
-                    return error_data
-                else:
-                    return self.delete_asnci_excape_squences_from_output(output)
-
-            except Exception as error:
-                error_data = self.delete_asnci_excape_squences_from_output(error)
-                self.files.create_error_file(error_data)
-                return error_data            
-
-    def assert_data(self, thread_results):
-        for assertion in self.assertions:
-            if assertion['type'] == 'contain' and assertion['value'] in thread_results:
-                self.output.print_risk_or_vulnerability_found(self.scenario_type, self.name, self.url, assertion)
-                self.files.create_risk_or_vulnerability_file(self.scenario_type, thread_results, self.file_name)
-            elif assertion['type'] == 'not_contain' and assertion['value'] not in thread_results:
-                self.output.print_risk_or_vulnerability_found(self.scenario_type, self.name, self.url, assertion)
-            elif assertion['type'] == 'regex':
-                regexp = re.compile(assertion['value'])
-                if regexp.search(thread_results):
-                    self.output.print_risk_or_vulnerability_found(self.scenario_type, self.name, self.url, assertion)
-
-    def add_thread(self):
-        thread = ThreadWithResult(target = self.run_command, args = (self.command, ))
-        thread.start()
-        thread.join()
-        threadLimiter.acquire()
-        self.output.print_added_to_queue(self.name, self.url, self.command)
-        thread_results = thread.result()
-        threadLimiter.release()
-        self.assert_data(thread_results)
-        self.files.create_tmp_txt_file(self.file_name)
-
-
-class Threads:
-    def __init__(self, scenarios):
-        self.scenarios = scenarios
+        return ansi_escape.sub('', output.decode('utf-8'))
 
     def get_urls(self):
         database = Database()
         return database.get_urls() 
     
-    def start_threads(self):
-        urls = self.get_urls()
-        
+    def get_last_element_of_url(self, url):
+        return url.rsplit('/', 1)[-1]
+
+    def validate_url(self, url):
+        last_part_of_url = self.get_last_element_of_url(url)
+
+        if '?' in url and '.js' in url:
+            return ['params', 'js', 'static', 'all']
+        elif '?' in url and '.' in last_part_of_url:
+            return ['params', 'static', 'all']
+        elif '?' in url:
+            return ['params', 'all']
+        elif '.html' in last_part_of_url or '.htm' in last_part_of_url:
+            return ['static', 'simple', 'all']
+        elif '.js' in url:
+            return ['js', 'static', 'all']
+        elif '.' in last_part_of_url:
+            return ['static', 'all']
+        elif not '?' in url and not '.' in last_part_of_url:
+            return ['simple', 'all']
+        else:
+            return ['all']
+
+    def assert_data(self, thread_results, file_name, scenario_data, process_args):
+        assertions = scenario_data["assertions"]
+        name = scenario_data["name"]
+        scenario_type = scenario_data["type"]
+
+        for assertion in assertions:
+            if assertion['type'] == 'contain' and assertion['value'] in thread_results:
+                self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
+            elif assertion['type'] == 'not_contain' and assertion['value'] not in thread_results:
+                self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
+            elif assertion['type'] == 'regex':
+                regexp = re.compile(assertion['value'])
+                if regexp.search(thread_results):
+                    self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                    self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
+
+    def handle_post_thread(self, output, error, process_args):
+        scenario_data = self.files.get_scenario_from_file(self.scenarios, process_args)
+        output_data = self.delete_asnci_excape_squences_from_output(output) if output else self.delete_asnci_excape_squences_from_output(error)
+        file_name = get_random_file_name()
+
+        if error:
+            self.files.create_error_file(output_data, file_name)                        
+
+        self.files.create_log_file(output_data, file_name)
+        self.assert_data(output_data, file_name, scenario_data, process_args)
+
+    def start_threads(self, commands, threads_quantity):
+        processes = (Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT) for cmd in commands)
+        for process in processes:
+            running_processes = list(islice(processes, threads_quantity))  # start new processes
+            while running_processes:
+                for i, process in enumerate(running_processes):
+                    if process.poll() is not None:  # the process has finished
+                        output, error = process.communicate()
+                    
+                        self.handle_post_thread(output, error, process.args)
+                        # print_test_finished?
+
+                        running_processes[i] = next(processes, None)  # start new process
+                        if running_processes[i] is None: # no new processes
+                            del running_processes[i]
+                            break
+
+    def prepare_commands(self):
+        urls = self.database.get_urls()
+        domains = self.database.get_domains()
+        commands = []
+
         for scenario in self.scenarios:            
             scenario_obj = Scenario(scenario)
-            name = scenario_obj.get_name()
-            url_type = scenario_obj.url_type()
-            module_name = scenario_obj.get_command()
-            assertions = scenario_obj.get_assertions()
-
-            for index, url in urls:
-                log_name = scenario_obj.get_log_name(index, url)
-                thread = Thread(name, url, url_type, module_name, command, assertions, log_name)
-                validate_url = thread.validate_url()
+            urls_to_test = domains if scenario_obj.is_single() else urls
+            
+            for index, url in enumerate(urls_to_test):
+                validate_url = self.validate_url(url)
+                url_type = scenario_obj.get_url_type()
                 if url_type in validate_url:
-                    thread.add_thread()
+                    command = construct_command(scenario_obj.get_command(url), url)
+                    name = scenario_obj.get_name()
+                    commands.append(command)
+
+        self.output.print_added_to_queue(len(commands))
+        return commands
     
 
 class PreconditionThreads:
-    def __init__(self, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, debug):
+    def __init__(self, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, ignore_domain):
         self.subfinder_enabled = subfinder_enabled
         self.ffuf_enabled = ffuf_enabled
         self.crawler_enabled = crawler_enabled
         self.url = url
         self.wordlist = wordlist
-        self.debug = debug
+        self.ignore_domain = ignore_domain
         self.output = Output()
         self.files = Files()
         self.database = Database()
-    
-    def debug_command(self, process):
-        # TODO: create debug version
-        if self.debug:
-            while process.stdout.readable():
-                line = process.stdout.readline()
-                if not line:
-                    break
-                another_line = str(line.strip())
-                print(another_line)
 
     def run_command(self, command):
-        print('running: {}'.format(command))
         process = subprocess.Popen(
             command,
             shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
         
-        # self.debug_command(process)
         process.wait()
         output, error = process.communicate()
-        print(output)
-        print(error)
-        print(":))")
         return output, error
 
     def replace_str_in_list(self, list_of_strings, old_string, new_string):
@@ -255,6 +219,7 @@ class PreconditionThreads:
         subfinder_cmd = ['subfinder', '-d', url_without_https]
         ffuf_cmd = ['ffuf', '-u', 'GLOBEEXPLORER_DOMAIN' + '/FUZZ', '-w', self.files.get_wordlist_path(self.wordlist), '-o', self.files.get_ffuf_directory_path() + '/FFUF_DOMAIN.json', '-of', 'json']
 
+        self.output.print_logo()
         self.run_subfinder(subfinder_cmd)    
         self.run_ffuf(ffuf_cmd)
         self.run_crawler()

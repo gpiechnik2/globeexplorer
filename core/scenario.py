@@ -1,3 +1,4 @@
+from core.utils import get_without_https_domain
 
 class Scenario:
     def __init__(self, scenario):
@@ -7,24 +8,24 @@ class Scenario:
         return self.scenario['name']
 
     def get_module_name(self):
-        return self.scenario['module_name']
+        return self.scenario['module_name'] if 'module_name' in self.scenario else False
 
     def get_url_type(self):
-        return self.scenario['url_type']
+        return self.scenario['url_type'] if 'url_type' in self.scenario else 'all'
 
     def get_command(self, url):
-        url_without_https = get_without_https_domain(url)
-        command = self.scenario['command']
-        command = command.replace('GE_WITH_HTTPS', url).replace('GE_WITHOUT_HTTPS', url_without_https)
-        return command
+        return self.scenario['command']
 
     def get_assertions(self):
         return self.scenario['assertions']
 
     def is_single(self):
-        if single in self.scenario:
-            return True if scenario["single"] == 'true' else False
+        if 'single' in self.scenario:
+            return True if self.scenario["single"] == True else False
 
     def get_log_name(self, index, url):
         url_without_characters = get_without_https_domain(url)
         return self.get_name() + '_{}_{}'.format(url_without_characters, index).replace(' ', '')
+
+    def get_scenario_type(self):
+        return self.scenario['type']

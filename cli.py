@@ -1,7 +1,10 @@
 import click
 
+from core.files import Files
+from core.threads import PreconditionThreads, Threads
+from core.utils import get_main_domain, validate_url, validate_wordlist
+from core.database import Database
 
-output = Output()
 
 @click.group()
 @click.version_option('1.0')
@@ -15,36 +18,48 @@ def cli():
 
     """
 
-
 @cli.command()
 @click.argument("scenario", type=str)
 @click.argument("url", type=str)
-@click.option('--wordlist', '-w', default='basic',
-              help='Wordlist name. Wordlists available: basic, extended, full.')
-@click.option('--subfinder', '-s', default='true',
-              help='Sets whether subfinder should check all subdomains. To disable, change to "disabled".')
-@click.option('--ffuf', '-f', default='true',
-              help='Sets whether ffuf should be run on each domain. To disable, change to "disabled".')
-def run(scenario, url, wordlist, subfinder, ffuf):
+@click.option('--subfinder/--no-subfinder', '-s/-ns', default=False,
+              help='Sets whether subfinder should check all subdomains. Disabled by default.')
+@click.option('--ffuf/--no-ffuf', '-f/-df', default=True,
+              help='Sets whether ffuf should be run on each domain. Enabled by default.')
+@click.option('--crawler/--no-crawler', '-c/-nc', default=True,
+              help='Sets whether the crawler should be started on each domain. Enabled by default.')
+@click.option('--wordlist', '-w', type=click.Path(),
+              help='The path specified to the wordlist. If it is not present, the default wordlist will be used.')
+@click.option('--threads', '-t', default=10,
+              help='Maximum number of threads used at once to run tests (default 10).')
+@click.option('--convert/--no-convert', '-c/-nc', default=True,
+              help='Sets whether the URL specified by the user should be converted to the root endpoint of his domain.')
+def run(scenario, url, subfinder, ffuf, crawler, wordlist, threads, convert):
     """Runs the specified test scenario on the specified url."""
-    wordlists = ['basic', 'extended', 'full', 'test']
-    true_false_choices = ['true', 'false', True, False]
-    if 'http' not in url:
-        print(output.red('Please provide http or https link'))
-    if wordlist not in wordlists:
-        print(
-            '{}  The given wordlist is not available. Available wordlists: basic, extended, full{}'.format(
-                Colors.RED,
-                Colors.OFF))
-    elif ffuf not in possible_choices:
-        print(
-            '{}  For the ffuf parameter, please use one of the available options: enabled, disabled.{}'.format(
-                Colors.RED,
-                Colors.OFF))
-    elif subfinder not in possible_choices:
-        print(
-            '{}  For the subfinder parameter, please use one of the available options: enabled, disabled.{}'.format(
-                Colors.RED,
-                Colors.OFF))
-    else:
-        run_scenario(scenario, url, wordlist, ffuf, subfinder)
+
+    validate_url(url)
+    validate_wordlist(wordlist)
+
+    if convert:
+        url = get_main_domain(url)
+
+    # create tmp files directory and validate scenario script
+    files = Files()
+    files.validate_scenario_content(scenario)
+    files.create_tmp_files_structure()
+
+    # create database with tables
+    database = Database()
+    database.create_initial_tables()
+
+    # preconditions
+    precondition_threads = PreconditionThreads(url, subfinder, ffuf, crawler, wordlist, threads, convert)
+    precondition_threads.start_preconditions()
+
+    # run scenarios
+    scenarios = files.get_scenarios(scenario)
+    threads = Threads(scenarios)
+    commands = threads.prepare_commands()
+    threads.start_threads(commands, threads)
+
+if __name__ == '__main__':
+    cli()

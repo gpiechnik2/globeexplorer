@@ -3,7 +3,8 @@
         {
             "name": "security headers",
             "module_name": "securityheaders",
-            "commands": "python3 securityheaders.py GLITCH_URL",
+            "type": "risk",
+            "command": "python3 securityheaders.py GLOBEEXPLORER_URL_WITH_HTTP",
             "assertions": [
                 {
                     "type": "contain",
@@ -14,7 +15,8 @@
         },
         {
             "name": "SSLyze",
-            "commands": "sslyze GLITCH_WITHOUT_HTTPS",
+            "type": "vulnerability",
+            "command": "sslyze GLOBEEXPLORER_URL_WITHOUT_HTTP",
             "assertions": [
                 {
                     "type": "contain",
@@ -25,20 +27,23 @@
         },
         {
             "name": "CRLF injection scanner",
+            "type": "vulnerability",
             "module_name": "CRLF-Injection-Scanner",
-            "commands":  "python3 crlf.py scan -u \"GLITCH_URL\"",
+            "command":  "python3 crlf.py scan -u \"GLOBEEXPLORER_URL_WITH_HTTP\"",
             "assertions": [
                 {
                     "type": "contain",
                     "value": "CRLF injection detected at the following URLs:"
                 }
             ],
-            "url_type": "params"
+            "url_type": "params",
+            "single": true
         },
         {
             "name": "Damn small JS scanner",
+            "type": "risk",
             "module_name": "DSJS",
-            "commands": "python3 dsjs.py -u GLITCH_URL",
+            "command": "python3 dsjs.py -u GLOBEEXPLORER_URL_WITH_HTTP",
             "assertions": [
                 {
                     "type": "not_contain",
@@ -50,19 +55,22 @@
         {
             "name": "Corsy CORS scanner",
             "module_name": "Corsy",
-            "commands": "python3 corsy.py -u GLITCH_URL",
+            "type": "vulnerability",
+            "command": "python3 corsy.py -u GLOBEEXPLORER_URL_WITH_HTTP",
             "assertions": [
                 {
                     "type": "contain",
                     "value": "Severity"
                 }
             ],
-            "url_type": "params"
+            "url_type": "params",
+            "single": true
         },
         {
             "name": "secretfinder",
             "module_name": "secretfinder",
-            "commands": "python3 SecretFinder.py -i GLITCH_URL -o cli -e",
+            "type": "vulnerability",
+            "command": "python3 SecretFinder.py -i GLOBEEXPLORER_URL_WITH_HTTP -o cli -e",
             "assertions": [
                 {
                     "type": "contain",
@@ -74,7 +82,8 @@
         {
             "name": "nmap log4shell",
             "module_name": "nse-log4shell",
-            "commands": "nmap -sV -T4 -v --script=/ GLITCH_WITHOUT_HTTPS",
+            "type": "vulnerability",
+            "command": "nmap -sV -T4 -v --script=/ GLOBEEXPLORER_URL_WITHOUT_HTTP",
             "assertions": [
                 {
                     "type": "contain",
@@ -85,7 +94,8 @@
         },
         {
             "name": "nmap vulners.nse",
-            "commands": "nmap GLITCH_WITHOUT_HTTPS --script=vulners.nse -sV",
+            "type": "vulnerability",
+            "command": "nmap GLOBEEXPLORER_URL_WITHOUT_HTTP --script=vulners.nse -sV",
             "assertions": [
                 {
                     "type": "contain",

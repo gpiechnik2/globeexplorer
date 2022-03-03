@@ -2,16 +2,16 @@ from pathlib import Path
 import os
 import json
 
-from database import Database
-from utils import get_https_domain
+from core.database import Database
+from core.utils import get_https_domain, construct_command, get_urls_from_string
 
 class Files:
     def __init__(self):
         self.TMP_DIRECTORY = self.get_script_directory() + '/tmp'
-        self.TMP_VULNERABIBILES_DIRECTORY = self.TMP_DIRECTORY + '/vulnerabilities'
-        self.TMP_RISKS_DIRECTORY = self.TMP_DIRECTORY + '/risks'
-        self.TMP_ERRORS_DIRECTORY = self.TMP_DIRECTORY + '/errors'
-        self.TMP_LOGS_DIRECTORY = self.TMP_DIRECTORY + '/logs'
+        self.TMP_VULNERABIBILES_DIRECTORY = self.TMP_DIRECTORY + '/vulnerabilities/'
+        self.TMP_RISKS_DIRECTORY = self.TMP_DIRECTORY + '/risks/'
+        self.TMP_ERRORS_DIRECTORY = self.TMP_DIRECTORY + '/errors/'
+        self.TMP_LOGS_DIRECTORY = self.TMP_DIRECTORY + '/logs/'
         self.MODULES_DIRECTORY = '/modules/'
         self.database = Database()
 
@@ -23,8 +23,7 @@ class Files:
         return str(Path.cwd())
 
     def create_tmp_txt_file(self, data, file_name):
-        directory = get_script_directory() + self.TMP_DIRECTORY
-        with open(directory + '/' + file_name, "a") as file:
+        with open(file_name, "a") as file:
             file.write(data.replace(r'\n', '\n').replace(r'\r', '\n'))
 
     def create_tmp_files_structure(self):
@@ -85,12 +84,61 @@ class Files:
         return self.get_script_directory() + '/core/wordlists/' + wordlist
 
     def validate_scenario_content(self, scenario_script):
-        pass
+        if 'scenarios' not in scenario_script:
+            self.output.print_error_end_exit('Please create a valid list with scenarios in your test file.')
+
+        scenarios = scenario_script["scenario"]
+        for index, scenario in enumerate(scenarios):
+            if 'name' not in scenario:
+                self.output.print_error_end_exit('Please define the name in {} scenario'.format(
+                    index
+                ))
+            if 'type' not in scenario:
+                self.output.print_error_end_exit('Please define the type in {} scenario'.format(
+                    index
+                ))
+            if 'command' not in scenario:
+                self.output.print_error_end_exit('Please define the command in {} scenario'.format(
+                    index
+                ))
+            # TODO: do we need that?
+            # if 'GLOBEEXPLORER_URL_WITH_HTTP' not in scenario["command"] and 'GLOBEEXPLORER_URL_WITHOUT_HTTP' not in scenario["command"]:
+            #     self.output.print_error_end_exit('please define GLOBEEXPLORER_URL_WITH_HTTP or GLOBEEXPLORER_URL_WITHOUT_HTTP in the command in {} scenario'.format(
+            #         index
+            #     ))
+            if 'assertions' not in scenario:
+                self.output.print_error_end_exit('Please define the assertion in {} scenario'.format(
+                    index
+                ))
+            for assertion in scenario["assertions"]:
+                if 'type' not in assertion:
+                    self.output.print_error_end_exit('Please define the type of the assertion in {} scenario'.format(
+                        index
+                    ))
+                if 'value' not in assertion: 
+                    self.output.print_error_end_exit('Please define the value of the assertion in {} scenario'.format(
+                        index
+                    ))
+                if assertion["type"] not in ['regex', 'contain', 'not_contain']:
+                    self.output.print_error_end_exit('Please define the valid assertion type in {} scenario. Available types: contain, not_contain, regex'.format(
+                        index
+                    ))
 
     def get_scenarios(self, scenario_script):
         with open(self.get_script_directory() + "/" + scenario_script, 'r',) as file:
-            return json.load(file)
+            return json.load(file)["scenarios"]
 
     def add_urls_from_list(self, urls):
         for url in urls:
             self.database.add_url(get_https_domain(url))
+
+    def get_scenario_from_file(self, scenarios, command):
+        urls = self.database.get_urls()
+        for scenario in scenarios:
+            for url in urls:
+                correct_command = construct_command(scenario["command"], url)
+                if correct_command == command:
+                    return scenario
+
+        # TODO: dla kazdej domeny z domains powinienem sprawdzac,
+        # poniewaz domena jest dodawana do bazy danych z parsowanych danych

@@ -49,8 +49,6 @@ class Database:
             time, domain
         ))
 
-        print('dodano {}'.format(domain))
-
         self.save_and_close(con)
 
     def add_url(self, url):
