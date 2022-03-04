@@ -119,11 +119,11 @@ globeexplorer --help
 ```
 This will display help for the tool. To run the tool, you need to specify three parameters.
 
-| Parameter                     | Description                                                     |
-| ----------------------------- | --------------------------------------------------------------- |
-| SCENARIO                      | A file with the extension .json that holds the list of tests    |
-| URL                           | Url with http or https protocol                                 |
-| WORDLIST                      | Wordlist path                                                   |
+| Parameter | Type   | Description                                                     |
+| --------- | ------ | --------------------------------------------------------------- |
+| SCENARIO  | String | A file with the extension .json that holds the list of tests    |
+| URL       | String | Url with http or https protocol                                 |
+| WORDLIST  | String | Wordlist path                                                   |
 
 Here are all the flags it supports.
 
@@ -182,11 +182,9 @@ The framework for the application reconnaissance part uses 2 github repositories
 | ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
 
 # TODO
-- Create a log from the main console
 - Create asynchronous crawling
 - Deploy to PyPi
 - Add the example script together with modules and Dockerfile in the examples directory
-- Add Dockerfile.base and push it to to the dockerhub
 
 # License
 Not included yet
