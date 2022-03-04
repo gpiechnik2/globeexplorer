@@ -7,17 +7,19 @@
       
 <p align="center">
   <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
   <a href="#setup">Setup</a> •
-  <a href="#dockerfile">Dockerfile</a> •
+  <a href="#commands">Commands</a> •
   <a href="#running">Running</a> •
-  <a href="#todo">Todo</a> •
+  <a href="#running-with-docker">Running with Docker</a> •
+  <a href="#tools-used">Tools used</a> •
   <a href="#license">License</a>
 </p>
 
 ---
 
 
-Globeexplorer is an extremely extensible framework for automating the running of different types of vulnerability and web risk scanners. The framework is dedicated to Continous Integration & Continous Security (CI&CS) and daily penetration testing of web applications. Thanks to automation of security scanners we are able to optimize our work and become more efficient.
+Globeexplorer is an extremely extensible framework for automating the running of different types of vulnerability and web risk scanners. The framework is dedicated to **Continous Integration & Continous Security** (CI&CS) and daily **penetration testing of web applications**. Thanks to automation of security scanners we are able to optimize our work and become more efficient.
 
 In the example directory you can find test scenarios with tool modules consisting of 12 security scanners. 
 
@@ -31,28 +33,14 @@ The framework has several distinctive features, which include:
 - clear console reporting
 - Possibility of integration with SQLite database
 
+# Installation
+For the tool to work, you need to have two tools installed locally. These are ffuf and subfinder. We recommend using our prepared Dockerfile. If you do not want to use the tool, use the following command to install the tool (and the subfinder with ffuf) locally:
+
+```
+test
+```
+
 # Setup
-To run the framework, you need to have two tools installed locally. This is subfinder for searching subdomains and ffuf for fuzzing. These tools are installed by default on kali linux. However, we recommend using Dockerfile.
-
-subfinder: https://github.com/projectdiscovery/subfinder </br>
-ffuf: https://github.com/ffuf/ffuf
-
-# Dockerfile
-A base Dockerfile has been included in the project, from which a proper Dockerfile can be created. The Dockerfile example is located in the "examples" directory, which holds an example application of the framework.
-
-To use the Dockerfile in the examples directory, you must first build a docker image using the following command.
-
-```console
-docker build -t globeexplorerscenarios -f Dockerfile .
-```
-
-Then, after checking the newly created image ID with the `docker images` command, run the tool with the (for example) command:
-
-```console
-docker run -it IMAGE_ID script.py https://example.pl
-```
-
-# Running
 To run a prepared scenario you need to have two things prepared. This is the test scenario and the "modules" directory that holds the modules that will be used in the test file (if it uses them).
 
 ## Scenario file
@@ -74,54 +62,94 @@ A test scenario is a .json file that holds all the tests. For the framework to w
                 }
             ],
             "single": boolean
-        },
+        }
     ]
 }
 ```
 
-Omowmy po kolei kazdy z elementow testu:
-1. name (required) - 
-2. module_name (optional) - if the command uses files (e.g. script.py) to run the tool, the file should be in a newly created directory in the modules directory. Then module_name will be the name of the modules directory,
-3. type (required) - the type of threat that the test checks for. Possible values are "risk" and "vulnerability",
-4. url_type (optional) - type of url on which the test should be run. If the tool uses only parameters for vulnerability checking, the url_type value will be "params". If url_type is not defined, the test will use any url type. The available values for url_type are:
-- params - url addresses using parameters (e.g. https://example.pl?s=test),
-- js - url addresses leading to javascript file (e.g. https://example.pl/test.js),
-- static - url addresses leading to static files on the website (e.g. https://example.pl/test.jpg),
-- simple - simple url's (e.g. https://example.pl/test),
-- all - all url's.
-5. command (required) - command that will be executed in the terminal. Two variables are used to define the url: `GLOBEEXPLORER_URL_WITH_HTTP` and `GLOBEEXPLORER_URL_WITHOUT_HTTP`. Example command: `python3 script.py --url GLOBEEXPLORER_URL_WITH_HTTP`,
-6. assertions (required) - a list with at least one element that is a type and an assertion value. Available types:
-- contain - checks if a given phrase appears in the standard output of the tool,
-- not_contain - checks if the phrase does not appear in the standard output of the tool,
-- regex - checks if the given regex exists in the standard output of the tool.
-7. single (optional) - if you want the tool to run only once on the main domain, the value of "single" should be true. The default is false.
+Let's discuss each element of the test in turn:
+1. **name (required)** - test name
+2. **module_name (optional)** - if the command uses files (e.g. script.py) to run the tool, the file should be in a newly created directory in the modules directory. Then module_name will be the name of the modules directory,
+3. **type (required)** - the type of threat that the test checks for. Possible values are "risk" and "vulnerability",
+4. **url_type (optional)** - type of url on which the test should be run. If the tool uses only parameters for vulnerability checking, the url_type value will be "params". If url_type is not defined, the test will use any url type. The available values for url_type are:
+    1. **params** - url addresses using parameters (e.g. `https://example.pl?s=test`),
+    2. **js** - url addresses leading to javascript file (e.g. `https://example.pl/test.js`),
+    3. **static** - url addresses leading to static files on the website (e.g. `https://example.pl/test.jpg`),
+    4. **simple** - simple url's (e.g. `https://example.pl/test`),
+    5. **all** - all url's.
+5. **command (required)** - command that will be executed in the terminal. Two variables are used to define the url: `GLOBEEXPLORER_URL_WITH_HTTP` and `GLOBEEXPLORER_URL_WITHOUT_HTTP`. Example command: `python3 script.py --url GLOBEEXPLORER_URL_WITH_HTTP`,
+6. **assertions (required)** - a list with at least one element that is a type and an assertion value. Available types:
+    1. **contain** - checks if a given phrase appears in the standard output of the tool,
+    2. **not_contain** - checks if the phrase does not appear in the standard output of the tool,
+    3. **regex** - checks if the given regex exists in the standard output of the tool.
+7. **single (optional)** - if you want the tool to run only once on the main domain, the value of "single" should be true. The default is false.
 
-An example script with existing tests can be found in the examples directory under the name scenarios.py.
+An example script (scenarios.json) with existing tests can be found in the examples directory.
 
 ## Modules
+In order for the tool to work, you need to create a modules directory in the same directory as the test file. Ultimately, the structure should look as follows:
 
+```
++ modules
+  + module1
+  + module2
+scenarios.json
+```
 
-## Commands
+Where `module1` and `module2` are the values used by the `module_name` parameter in the tests from the scenarios.json file
+
+# Commands
 ```sh
 globeexplorer --help
 ```
 This will display help for the tool. Here are all the flags it supports.
 
-| Flag                                  | Description                                                                                   |
-| ------------------------------------- | --------------------------------------------------------------------------------------------- |
-| -s, --subfinder / -ns, --no-subfinder | Sets whether subfinder should check all subdomains. Disabled by default.                      |
-| -f, --ffuf / -df, --no-ffuf           | Sets whether ffuf should be run on each domain. Enabled by default.                           |
-| -c, --crawler / -nc, --no-crawler     | Sets whether the crawler should be started on each domain. Enabled by default.                |
-| -w, --wordlist PATH                   | The path specified to the wordlist. If it is not present, the default wordlist will be used. |
-| -t, --threads INTEGER                 | Maximum number of threads used at once to run tests (default 10).                             |
-| -c, --convert / -nc, --no-convert     | Sets whether the URL specified by the user should be converted to the root endpoint of his domain.                   |
-| --version                             | Show the version and exit.                                                                    |
+| Flag                                  | Description                                                                                               |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| -s, --subfinder / -ns, --no-subfinder | Sets whether subfinder should check all subdomains. Disabled by default.                                  |
+| -f, --ffuf / -df, --no-ffuf           | Sets whether ffuf should be run on each domain. Enabled by default.                                       |
+| -c, --crawler / -nc, --no-crawler     | Sets whether the crawler should be started on each domain. Enabled by default.                            |
+| -w, --wordlist PATH                   | The path specified to the wordlist. If it is not present, the default wordlist will be used (+900 words). |
+| -t, --threads INTEGER                 | Maximum number of threads used at once to run tests (default 10).                                         |
+| -c, --convert / -nc, --no-convert     | Sets whether the URL specified by the user should be converted to the root endpoint of his domain.        |
+| --version                             | Show the version and exit.                                                                                |
+
+# Running
+To use the tool, use the following command:
+```sh
+globeex
+```
+
+The `/tmp` directory contains all the sorted test logs.
+
+# Running with Docker
+Pull the latest tagged [globeexplorer](https://hub.docker.com/gpiechnik2/globeexplorer) docker image:
+
+```sh
+docker pull gpiechnik2/globeexplorer:latest
+```
+
+Running globeexplorer using docker image:
+
+```sh
+docker -t gpiechnik2/globeexplorer:latest scenario.py https://example.pl
+``` 
+
+# Tools used
+The framework for the application reconnaissance part uses 3 github repositories. These are:
+
+| Tool      | Description                                                                                   | Repository                                    |
+| ----------| --------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| subfinder | Discovering passive subdomains of websites by using digital sources like Censys, Chaos, Recon | https://github.com/projectdiscovery/subfinder |
+| ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
+| SecLists  | Wordlist used for fuzzing (common.txt)                                                        | https://github.com/danielmiessler/SecLists    |
 
 
 # todo
 - make crawling asynchronous
 - setup.py
 - add Dockerfile.base
+- push to dockerhub
 - add Dockerfile and modules in the example directory
 
 # License
