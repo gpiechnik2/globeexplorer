@@ -19,9 +19,9 @@
 ---
 
 
-Globeexplorer is an extremely extensible framework for automating the running of different types of vulnerability and web risk scanners. The framework is dedicated to **Continous Integration & Continous Security** (CI&CS) and daily **penetration testing of web applications**. Thanks to automation of security scanners we are able to optimize our work and become more efficient.
+Globeexplorer is an extremely extensible framework for automating the running of different types of vulnerability and web risk scanners. The framework is dedicated to **Continous Integration & Continous Security (CI&CS)** and daily **penetration testing of web applications**. Thanks to automation of security scanners we are able to optimize our work and become more efficient.
 
-In the example directory you can find test scenarios with tool modules consisting of 12 security scanners. 
+In the example directory you can find test scenarios with tool modules consisting of 8 security scanners. 
 
 # Features
 The framework has several distinctive features, which include:
@@ -101,7 +101,7 @@ Let's discuss each element of the test in turn:
 An example script (scenarios.json) with existing tests can be found in the examples directory.
 
 ## Modules
-In order for the tool to work, you need to create a modules directory in the same directory as the test file. Ultimately, the structure should look as follows:
+In order for the tool to work, you need to create a modules directory in the same directory as the scenario file. Ultimately, the structure should look as follows:
 
 ```
 + modules
@@ -111,7 +111,7 @@ scenarios.json
 wordlist.txt
 ```
 
-Where `module1` and `module2` are the values used by the `module_name` parameter in the tests from the scenarios.json file
+Where `module1` and `module2` are the values used by the `module_name` parameter in the tests from the scenarios.json file.
 
 # Commands
 ```sh
@@ -140,38 +140,42 @@ Here are all the flags it supports.
 To use the tool, use the following command:
 
 ```console
-globeexplorer scenario.json https://bugspace.pl wordlist.txt 
+globeexplorer scenarios.json https://bugspace.pl wordlist.txt 
      _     _                   _                 
  ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
 | . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
 |_  |_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2
 |___|                     |_|                    
                                                  
-⌾ [08:27:29] Scenario data.........: scenario: script.json; url: https://bugspace.pl; subfinder: disabled; ffuf: enabled; crawler: enabled; wordlist: wordlist.txt; threads: 10; convert: enabled;
+⌾ [08:27:29] Scenario data.........: scenario: scenarios.json; url: https://bugspace.pl; subfinder: disabled; ffuf: enabled; crawler: enabled; wordlist: wordlist.txt; threads: 10; convert: enabled;
 ⌾ [08:27:29] Initial module started: ffuf; great tool used for fuzzing;
 ⌾ [08:27:30] Initial module started: crawler; web crawling tool;
 ⌾ [08:29:29] Added to the queue....: 6 tests based on 111 urls of 1 domains;
 ⌾ [08:29:29] Please be patient. If a risk or vulnerability is discovered, we will let you know;
 
-⌾ [08:29:29] Risk found............: Damn small JS scanner; python3 dsjs.py -u https://bugspace.pl; not_contain; no vulnerabilities found;             
+⌾ [08:29:29] Risk found............: Damn small JS scanner; fcd902c5b0764b93.log; not_contain; no vulnerabilities found;          
+⌾ [17:05:58] Vulnerability found...: secretfinder; fffe354beca84ca7.log; contain; API_KEY;   
 ```
 
-The `/tmp` directory contains all the sorted test logs.
+the logs displayed in the console can be found in the appropriate directory in the `/tmp` directory
 
 # Running with Docker
-Pull the latest tagged [globeexplorer](https://hub.docker.com/gpiechnik2/globeexplorer) docker image:
+Dockerfile globeexplorer is the base Docker file that should be used to build the actual Dockerfiles. An example of a proper dockerfile can be found in the modules directory. 
 
+The base dockerfile can be downloaded at [globeexplorer](https://hub.docker.com/gpiechnik2/globeexplorer):
 ```sh
 docker pull gpiechnik2/globeexplorer:latest
 ```
 
-Running globeexplorer using docker image:
+To run the example tests, first build the docker image while in the examples directory:
+```
+docker build -t explore -f Dockerfile . 
+```
 
-```sh
-docker -t gpiechnik2/globeexplorer:latest scenario.json https://example.pl wordlist.txt
-``` 
-
-Remember that the scenario.json and wordlist.txt file must be inside the built docker image.
+Then get the docker ID with the `docker images` command and run the tests through it.
+```
+docker run -it IMAGE_ID scenarios.json https://example.pl wordlist.txt
+```
 
 # Tools used
 The framework for the application reconnaissance part uses 2 github repositories. These are:
@@ -184,7 +188,6 @@ The framework for the application reconnaissance part uses 2 github repositories
 # TODO
 - Create asynchronous crawling
 - Deploy to PyPi
-- Add the example script together with modules and Dockerfile in the examples directory
 
 # License
 Not included yet

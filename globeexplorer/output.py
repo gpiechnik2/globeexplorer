@@ -56,7 +56,7 @@ class Output:
             self.purple('⌾'),
             self.get_time(),
             'Scenario data.........:',
-            'scenario: ' + scenario + purple_semicolon + ' url: ' + url + purple_semicolon + ' subfinder: ' + subfinder + purple_semicolon + ' ffuf: ' + ffuf + purple_semicolon + ' crawler: ' + crawler + purple_semicolon + ' wordlist: ' + wordlist + purple_semicolon + ' threads: ' + str(threads) + purple_semicolon + ' convert: ' + convert,
+            'scenario: ' + self.purple(scenario) + purple_semicolon + ' url: ' + self.purple(url) + purple_semicolon + ' subfinder: ' + subfinder + purple_semicolon + ' ffuf: ' + ffuf + purple_semicolon + ' crawler: ' + crawler + purple_semicolon + ' wordlist: ' + wordlist + purple_semicolon + ' threads: ' + self.purple(str(threads)) + purple_semicolon + ' convert: ' + convert,
             purple_semicolon
         ))
 
@@ -77,7 +77,7 @@ class Output:
             '\n'
         ))
 
-    def print_vulnerability_found(self, name, process_args, assertion):
+    def print_vulnerability_found(self, name, file_name, assertion):
         purple_semicolon = self.get_purple_semicolon()
         print('{} [{}] {} {}{} {}{} {}{} {}{}'.format(
             self.purple('⌾'),
@@ -85,7 +85,7 @@ class Output:
             self.red('Vulnerability found...:'),
             name,
             purple_semicolon,
-            process_args,
+            file_name,
             purple_semicolon,
             assertion['type'],
             purple_semicolon,
@@ -93,7 +93,7 @@ class Output:
             purple_semicolon
         ))
 
-    def print_risk_found(self, name, process_args, assertion):
+    def print_risk_found(self, name, file_name, assertion):
         purple_semicolon = self.get_purple_semicolon()
         print('{} [{}] {} {}{} {}{} {}{} {}{}'.format(
             self.purple('⌾'),
@@ -101,7 +101,7 @@ class Output:
             self.red('Risk found............:'),
             name,
             purple_semicolon,
-            process_args,
+            file_name,
             purple_semicolon,
             assertion['type'],
             purple_semicolon,
@@ -109,11 +109,11 @@ class Output:
             purple_semicolon
         ))
 
-    def print_risk_or_vulnerability_found(self, scenario_type, name, process_args, assertion):
+    def print_risk_or_vulnerability_found(self, scenario_type, name, file_name, assertion):
         if scenario_type == 'risk':
-            self.print_risk_found(name, process_args, assertion)
+            self.print_risk_found(name, file_name, assertion)
         elif scenario_type == 'vulnerability':
-            self.print_vulnerability_found(name, process_args, assertion)    
+            self.print_vulnerability_found(name, file_name, assertion)    
 
     def print_initial_module_started(self, name, description):
         purple_semicolon = self.get_purple_semicolon()

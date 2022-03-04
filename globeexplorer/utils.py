@@ -27,9 +27,8 @@ def get_string_without_special_chars(mystring):
 
 def get_random_file_name(string_length = 16):
     random = str(uuid.uuid4()) # Convert UUID format to a Python string.
-    random = random.upper() # Make all characters uppercase.
     random = random.replace("-","") # Remove the UUID '-'.
-    return random[0:string_length] # Return the random string.
+    return random[0:string_length] + '.log' # Return the random string.
 
 
 def construct_command(command, url):

@@ -63,22 +63,22 @@ class Threads:
         else:
             return ['all']
 
-    def assert_data(self, thread_results, file_name, scenario_data, process_args):
+    def assert_data(self, thread_results, file_name, scenario_data):
         assertions = scenario_data["assertions"]
         name = scenario_data["name"]
         scenario_type = scenario_data["type"]
 
         for assertion in assertions:
             if assertion['type'] == 'contain' and assertion['value'] in thread_results:
-                self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                self.output.print_risk_or_vulnerability_found(scenario_type, name, file_name, assertion)
                 self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
             elif assertion['type'] == 'not_contain' and assertion['value'] not in thread_results:
-                self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                self.output.print_risk_or_vulnerability_found(scenario_type, name, file_name, assertion)
                 self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
             elif assertion['type'] == 'regex':
                 regexp = re.compile(assertion['value'])
                 if regexp.search(thread_results):
-                    self.output.print_risk_or_vulnerability_found(scenario_type, name, process_args, assertion)
+                    self.output.print_risk_or_vulnerability_found(scenario_type, name, file_name, assertion)
                     self.files.create_risk_or_vulnerability_file(scenario_type, thread_results, file_name)
 
     def handle_post_thread(self, output, error, process_args):
@@ -90,10 +90,10 @@ class Threads:
             self.files.create_error_file(output_data, file_name)                        
 
         self.files.create_log_file(output_data, file_name)
-        self.assert_data(output_data, file_name, scenario_data, process_args)
+        self.assert_data(output_data, file_name, scenario_data)
 
     def start_threads(self, commands, threads_quantity):
-        processes = (Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT) for cmd in commands)
+        processes = (Popen(cmd["command"], shell=True, stdout=PIPE, stderr=STDOUT, cwd=cmd["module_path"]) for cmd in commands)
         for process in processes:
             running_processes = list(islice(processes, threads_quantity))  # start new processes
             while running_processes:
@@ -124,7 +124,12 @@ class Threads:
                 if url_type in validate_url:
                     command = construct_command(scenario_obj.get_command(url), url)
                     name = scenario_obj.get_name()
-                    commands.append(command)
+                    module_name = scenario_obj.get_module_name()
+                    module_path = 'modules/' + module_name if module_name else '/'
+                    commands.append({
+                        "command": command,
+                        "module_path": module_path
+                    })
 
         self.output.print_added_to_queue(len(commands), len(urls), len(domains))
         return commands

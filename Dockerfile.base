@@ -27,5 +27,3 @@ WORKDIR /app
 # Install globeexplorer
 RUN pip3 install -r requirements.txt
 RUN pip install --editable .
-
-ENTRYPOINT ["globeexplorer"]
