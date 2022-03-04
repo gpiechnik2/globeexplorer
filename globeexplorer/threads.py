@@ -7,12 +7,12 @@ from itertools import islice
 import sys
 from time import sleep
 
-from core.database import Database
-from core.output import Output
-from core.files import Files
-from core.utils import get_https_domain, get_without_https_domain, get_string_without_special_chars, get_random_file_name, construct_command
-from core.crawler import get_links
-from core.scenario import Scenario
+from globeexplorer.database import Database
+from globeexplorer.output import Output
+from globeexplorer.files import Files
+from globeexplorer.utils import get_https_domain, get_without_https_domain, get_string_without_special_chars, get_random_file_name, construct_command
+from globeexplorer.crawler import get_links
+from globeexplorer.scenario import Scenario
 
 
 class Threads:
@@ -137,8 +137,8 @@ class PreconditionThreads:
         self.crawler_enabled = crawler_enabled
         self.url = url
         self.convert = convert
+        self.wordlist = wordlist
         self.files = Files()
-        self.wordlist = wordlist if wordlist else self.files.get_wordlist_path()
         self.output = Output()
         self.database = Database()
 

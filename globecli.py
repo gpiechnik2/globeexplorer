@@ -1,29 +1,28 @@
 import click
 
-from core.files import Files
-from core.threads import PreconditionThreads, Threads
-from core.utils import get_main_domain, validate_url, validate_wordlist
-from core.database import Database
-from core.output import Output
+from globeexplorer.files import Files
+from globeexplorer.threads import PreconditionThreads, Threads
+from globeexplorer.utils import get_main_domain, validate_url, validate_wordlist
+from globeexplorer.database import Database
+from globeexplorer.output import Output
 
 
 @click.version_option('1.0')
 @click.command()
 @click.argument("scenario", type=str)
 @click.argument("url", type=str)
+@click.argument("wordlist", type=str)
 @click.option('--subfinder/--no-subfinder', '-s/-ns', default=False,
               help='Sets whether subfinder should check all subdomains. Disabled by default.')
 @click.option('--ffuf/--no-ffuf', '-f/-df', default=True,
               help='Sets whether ffuf should be run on each domain. Enabled by default.')
 @click.option('--crawler/--no-crawler', '-c/-nc', default=True,
               help='Sets whether the crawler should be started on each domain. Enabled by default.')
-@click.option('--wordlist', '-w', type=click.Path(),
-              help='The path specified to the wordlist. If it is not present, the default wordlist will be used.')
 @click.option('--threads', '-t', default=10,
               help='Maximum number of threads used at once to run tests (default 10).')
 @click.option('--convert/--no-convert', '-c/-nc', default=True,
               help='Sets whether the URL specified by the user should be converted to the root endpoint of his domain.')
-def cli(scenario, url, subfinder, ffuf, crawler, wordlist, threads, convert):
+def cli(scenario, url, wordlist, subfinder, ffuf, crawler, threads, convert):
     """globeexplorer
 
     globeexplorer is a simple tool for writing test scenarios 

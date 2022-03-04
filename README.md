@@ -34,10 +34,21 @@ The framework has several distinctive features, which include:
 - Possibility of integration with SQLite database
 
 # Installation
-For the tool to work, you need to have two tools installed locally. These are ffuf and subfinder. We recommend using our prepared Dockerfile. If you do not want to use the tool, use the following command to install the tool (and the subfinder with ffuf) locally:
+For the tool to work, you need to have two tools installed locally. These are ffuf and subfinder. We recommend using our prepared Dockerfile instead. 
+
+If you don't want to use docker, install subfinder and ffuf first (on kali linux they are installed by default). Then download globexplorer with the command:
 
 ```
-test
+git clone https://github.com/gpiechnik2/globeexplorer.git
+```
+
+Go to the repository and install the tool locally
+```
+cd globeexplorer
+```
+
+```
+pip install --editable .
 ```
 
 # Setup
@@ -109,7 +120,6 @@ This will display help for the tool. Here are all the flags it supports.
 | -s, --subfinder / -ns, --no-subfinder | Sets whether subfinder should check all subdomains. Disabled by default.                                  |
 | -f, --ffuf / -df, --no-ffuf           | Sets whether ffuf should be run on each domain. Enabled by default.                                       |
 | -c, --crawler / -nc, --no-crawler     | Sets whether the crawler should be started on each domain. Enabled by default.                            |
-| -w, --wordlist PATH                   | The path specified to the wordlist. If it is not present, the default wordlist will be used (+900 words). |
 | -t, --threads INTEGER                 | Maximum number of threads used at once to run tests (default 10).                                         |
 | -c, --convert / -nc, --no-convert     | Sets whether the URL specified by the user should be converted to the root endpoint of his domain.        |
 | --version                             | Show the version and exit.                                                                                |
@@ -117,7 +127,21 @@ This will display help for the tool. Here are all the flags it supports.
 # Running
 To use the tool, use the following command:
 ```sh
-globeex
+globeexplorer scenario.json https://bugspace.pl test.txt 
+     _     _                   _                 
+ ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
+| . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
+|_  |_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2
+|___|                     |_|                    
+                                                 
+⌾ [08:27:29] Scenario data.........: scenario: script.json; url: https://bugspace.pl; subfinder: disabled; ffuf: enabled; crawler: enabled; wordlist: test.txt; threads: 10; convert: enabled;
+⌾ [08:27:29] Initial module started: ffuf; great tool used for fuzzing;
+⌾ [08:27:30] Initial module started: crawler; web crawling tool;
+⌾ [08:29:29] Added to the queue....: 6 tests based on 111 urls of 1 domains;
+⌾ [08:29:29] Please be patient. If a risk or vulnerability is discovered, we will let you know ;
+
+⌾ [08:29:29] Risk found............: Damn small JS scanner; python3 dsjs.py -u https://bugspace.pl; not_contain; no vulnerabilities found;
+                                                        
 ```
 
 The `/tmp` directory contains all the sorted test logs.
@@ -132,22 +156,21 @@ docker pull gpiechnik2/globeexplorer:latest
 Running globeexplorer using docker image:
 
 ```sh
-docker -t gpiechnik2/globeexplorer:latest scenario.py https://example.pl
+docker -t gpiechnik2/globeexplorer:latest scenario.py https://example.pl common.txt
 ``` 
 
 # Tools used
-The framework for the application reconnaissance part uses 3 github repositories. These are:
+The framework for the application reconnaissance part uses 2 github repositories. These are:
 
 | Tool      | Description                                                                                   | Repository                                    |
 | ----------| --------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | subfinder | Discovering passive subdomains of websites by using digital sources like Censys, Chaos, Recon | https://github.com/projectdiscovery/subfinder |
 | ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
-| SecLists  | Wordlist used for fuzzing (common.txt)                                                        | https://github.com/danielmiessler/SecLists    |
-
 
 # todo
 - make crawling asynchronous
 - setup.py
+- deploy to PyPi
 - add Dockerfile.base
 - push to dockerhub
 - add Dockerfile and modules in the example directory

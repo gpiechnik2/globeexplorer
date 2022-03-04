@@ -1,6 +1,6 @@
-from core.files import Files
-from core.database import Database
-from core.threads import PreconditionThreads, Threads
+from globeexplorer.files import Files
+from globeexplorer.database import Database
+from globeexplorer.threads import PreconditionThreads, Threads
 
 
 def main(scenario_script, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, threads_quantity, ignore_domain):

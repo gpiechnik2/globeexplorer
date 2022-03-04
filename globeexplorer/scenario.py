@@ -1,4 +1,4 @@
-from core.utils import get_without_https_domain
+from globeexplorer.utils import get_without_https_domain
 
 class Scenario:
     def __init__(self, scenario):

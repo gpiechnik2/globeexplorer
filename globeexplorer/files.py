@@ -3,9 +3,9 @@ import os
 import json
 from shutil import rmtree
 
-from core.database import Database
-from core.utils import get_https_domain, construct_command, get_urls_from_string
-from core.output import Output
+from globeexplorer.database import Database
+from globeexplorer.utils import get_https_domain, construct_command, get_urls_from_string
+from globeexplorer.output import Output
 
 class Files:
     def __init__(self):
@@ -82,10 +82,6 @@ class Files:
             for result in json_data['results']:
                 url = result['url']
                 self.database.add_url(url)
-
-    def get_wordlist_path(self):
-        # TODO: improve
-        return self.get_script_directory() + '/core/wordlists/common.txt'
 
     def validate_scenario_content(self, scenario_script):
         scenario_data = self.get_scenarios(scenario_script)

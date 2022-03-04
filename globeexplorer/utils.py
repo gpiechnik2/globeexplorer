@@ -4,7 +4,7 @@ import uuid
 from urllib.parse import urlparse
 from os.path import exists
 
-from core.output import Output
+from globeexplorer.output import Output
 
 
 def get_https_domain(domain):
