@@ -42,10 +42,13 @@ If you don't want to use docker, install subfinder and ffuf first (on kali linux
 git clone https://github.com/gpiechnik2/globeexplorer.git
 ```
 
-Go to the repository and install the tool locally
+Go to the repository
+
 ```
 cd globeexplorer
 ```
+
+And install the tool locally
 
 ```
 pip install --editable .
@@ -105,6 +108,7 @@ In order for the tool to work, you need to create a modules directory in the sam
   + module1
   + module2
 scenarios.json
+wordlist.txt
 ```
 
 Where `module1` and `module2` are the values used by the `module_name` parameter in the tests from the scenarios.json file
@@ -113,7 +117,15 @@ Where `module1` and `module2` are the values used by the `module_name` parameter
 ```sh
 globeexplorer --help
 ```
-This will display help for the tool. Here are all the flags it supports.
+This will display help for the tool. To run the tool, you need to specify three parameters.
+
+| Parameter | Description                                                  |
+| --------- | ------------------------------------------------------------ |
+| SCENARIO  | A file with the extension .json that holds the list of tests |
+| URL       | Url with http or https protocol                              |
+| WORDLIST  | Wordlist path                                                |
+
+Here are all the flags it supports.
 
 | Flag                                  | Description                                                                                               |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -126,7 +138,8 @@ This will display help for the tool. Here are all the flags it supports.
 
 # Running
 To use the tool, use the following command:
-```sh
+
+```console
 globeexplorer scenario.json https://bugspace.pl test.txt 
      _     _                   _                 
  ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
@@ -140,8 +153,7 @@ globeexplorer scenario.json https://bugspace.pl test.txt
 ⌾ [08:29:29] Added to the queue....: 6 tests based on 111 urls of 1 domains;
 ⌾ [08:29:29] Please be patient. If a risk or vulnerability is discovered, we will let you know ;
 
-⌾ [08:29:29] Risk found............: Damn small JS scanner; python3 dsjs.py -u https://bugspace.pl; not_contain; no vulnerabilities found;
-                                                        
+⌾ [08:29:29] Risk found............: Damn small JS scanner; python3 dsjs.py -u https://bugspace.pl; not_contain; no vulnerabilities found;             
 ```
 
 The `/tmp` directory contains all the sorted test logs.
@@ -168,12 +180,10 @@ The framework for the application reconnaissance part uses 2 github repositories
 | ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
 
 # todo
-- make crawling asynchronous
-- setup.py
-- deploy to PyPi
-- add Dockerfile.base
-- push to dockerhub
-- add Dockerfile and modules in the example directory
+- Create asynchronous crawling
+- Deploy to PyPi
+- Add the example script together with modules and Dockerfile in the examples directory
+- Add Dockerfile.base and push it to to the dockerhub
 
 # License
 Not included yet
