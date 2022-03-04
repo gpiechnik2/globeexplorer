@@ -69,7 +69,7 @@ class Output:
             self.purple(str(tests_quantity)) + ' tests based on ' + self.purple(str(urls_quantity)) + ' urls of ' + self.purple(str(domains_quantity)) + ' domains',
             purple_semicolon
         ))
-        print('{} [{}] {} {}{}'.format(
+        print('{} [{}] {}{}{}'.format(
             self.purple('⌾'),
             self.get_time(),
             'Please be patient. If a risk or vulnerability is discovered, we will let you know',

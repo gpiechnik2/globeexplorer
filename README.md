@@ -119,11 +119,11 @@ globeexplorer --help
 ```
 This will display help for the tool. To run the tool, you need to specify three parameters.
 
-| Parameter | Description                                                  |
-| --------- | ------------------------------------------------------------ |
-| SCENARIO  | A file with the extension .json that holds the list of tests |
-| URL       | Url with http or https protocol                              |
-| WORDLIST  | Wordlist path                                                |
+| Parameter                     | Description                                                     |
+| ----------------------------- | --------------------------------------------------------------- |
+| SCENARIO                      | A file with the extension .json that holds the list of tests    |
+| URL                           | Url with http or https protocol                                 |
+| WORDLIST                      | Wordlist path                                                   |
 
 Here are all the flags it supports.
 
@@ -140,18 +140,18 @@ Here are all the flags it supports.
 To use the tool, use the following command:
 
 ```console
-globeexplorer scenario.json https://bugspace.pl test.txt 
+globeexplorer scenario.json https://bugspace.pl wordlist.txt 
      _     _                   _                 
  ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
 | . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
 |_  |_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2
 |___|                     |_|                    
                                                  
-⌾ [08:27:29] Scenario data.........: scenario: script.json; url: https://bugspace.pl; subfinder: disabled; ffuf: enabled; crawler: enabled; wordlist: test.txt; threads: 10; convert: enabled;
+⌾ [08:27:29] Scenario data.........: scenario: script.json; url: https://bugspace.pl; subfinder: disabled; ffuf: enabled; crawler: enabled; wordlist: wordlist.txt; threads: 10; convert: enabled;
 ⌾ [08:27:29] Initial module started: ffuf; great tool used for fuzzing;
 ⌾ [08:27:30] Initial module started: crawler; web crawling tool;
 ⌾ [08:29:29] Added to the queue....: 6 tests based on 111 urls of 1 domains;
-⌾ [08:29:29] Please be patient. If a risk or vulnerability is discovered, we will let you know ;
+⌾ [08:29:29] Please be patient. If a risk or vulnerability is discovered, we will let you know;
 
 ⌾ [08:29:29] Risk found............: Damn small JS scanner; python3 dsjs.py -u https://bugspace.pl; not_contain; no vulnerabilities found;             
 ```
@@ -168,8 +168,10 @@ docker pull gpiechnik2/globeexplorer:latest
 Running globeexplorer using docker image:
 
 ```sh
-docker -t gpiechnik2/globeexplorer:latest scenario.py https://example.pl common.txt
+docker -t gpiechnik2/globeexplorer:latest scenario.json https://example.pl wordlist.txt
 ``` 
+
+Remember that the scenario.json and wordlist.txt file must be inside the built docker image.
 
 # Tools used
 The framework for the application reconnaissance part uses 2 github repositories. These are:
@@ -179,7 +181,8 @@ The framework for the application reconnaissance part uses 2 github repositories
 | subfinder | Discovering passive subdomains of websites by using digital sources like Censys, Chaos, Recon | https://github.com/projectdiscovery/subfinder |
 | ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
 
-# todo
+# TODO
+- Create a log from the main console
 - Create asynchronous crawling
 - Deploy to PyPi
 - Add the example script together with modules and Dockerfile in the examples directory
