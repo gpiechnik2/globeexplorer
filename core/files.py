@@ -1,9 +1,11 @@
 from pathlib import Path
 import os
 import json
+from shutil import rmtree
 
 from core.database import Database
 from core.utils import get_https_domain, construct_command, get_urls_from_string
+from core.output import Output
 
 class Files:
     def __init__(self):
@@ -14,6 +16,7 @@ class Files:
         self.TMP_LOGS_DIRECTORY = self.TMP_DIRECTORY + '/logs/'
         self.MODULES_DIRECTORY = '/modules/'
         self.database = Database()
+        self.output = Output()
 
     def create_directory_if_does_not_exists(self, directory):
         if not os.path.exists(directory):
@@ -80,14 +83,17 @@ class Files:
                 url = result['url']
                 self.database.add_url(url)
 
-    def get_wordlist_path(self, wordlist):
-        return self.get_script_directory() + '/core/wordlists/' + wordlist
+    def get_wordlist_path(self):
+        # TODO: improve
+        return self.get_script_directory() + '/core/wordlists/common.txt'
 
     def validate_scenario_content(self, scenario_script):
-        if 'scenarios' not in scenario_script:
+        scenario_data = self.get_scenarios(scenario_script)
+
+        if 'scenarios' not in scenario_data:
             self.output.print_error_end_exit('Please create a valid list with scenarios in your test file.')
 
-        scenarios = scenario_script["scenario"]
+        scenarios = scenario_data["scenarios"]
         for index, scenario in enumerate(scenarios):
             if 'name' not in scenario:
                 self.output.print_error_end_exit('Please define the name in {} scenario'.format(
@@ -126,7 +132,7 @@ class Files:
 
     def get_scenarios(self, scenario_script):
         with open(self.get_script_directory() + "/" + scenario_script, 'r',) as file:
-            return json.load(file)["scenarios"]
+            return json.load(file)
 
     def add_urls_from_list(self, urls):
         for url in urls:
@@ -142,3 +148,16 @@ class Files:
 
         # TODO: dla kazdej domeny z domains powinienem sprawdzac,
         # poniewaz domena jest dodawana do bazy danych z parsowanych danych
+
+    def delete_file(self, path):
+        if os.path.exists(path):
+            os.remove(path)
+
+    def delete_directory(self, path):
+        dirpath = Path(path)
+        if dirpath.exists() and dirpath.is_dir():
+            rmtree(dirpath)
+
+    def clear(self):
+        self.delete_file(self.get_script_directory() + '/' + self.database.name())
+        self.delete_directory(self.TMP_DIRECTORY)

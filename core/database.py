@@ -45,9 +45,13 @@ class Database:
         cur = self.cursor(con)
         time = self.get_time()
 
-        cur.execute("INSERT INTO domains VALUES (?,?)", (
-            time, domain
-        ))
+        cur.execute('SELECT * FROM domains WHERE (domain=?)', (domain,))
+        entry = cur.fetchone()
+
+        if entry is None:
+            cur.execute("INSERT INTO domains VALUES (?,?)", (
+                time, domain
+            ))
 
         self.save_and_close(con)
 
@@ -56,9 +60,13 @@ class Database:
         cur = self.cursor(con)
         time = self.get_time()
 
-        cur.execute("INSERT INTO urls VALUES (?,?)", (
-            time, url
-        ))
+        cur.execute('SELECT * FROM urls WHERE (url=?)', (url,))
+        entry = cur.fetchone()
+
+        if entry is None:
+            cur.execute("INSERT INTO urls VALUES (?,?)", (
+                time, url
+            ))
 
         self.save_and_close(con)
 

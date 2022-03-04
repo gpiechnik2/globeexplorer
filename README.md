@@ -32,7 +32,11 @@ The framework has several distinctive features, which include:
 - Possibility of integration with SQLite database
 
 # Setup
-Do uruchomienia frameworka potrzebne jest posiadanie dwoch narzedzi lokalnie. Jest to subfinder
+
+To run the framework, you need to have two tools installed locally. This is subfinder for searching subdomains and ffuf for fuzzing. These tools are installed by default on kali linux. However, we recommend using Dockerfile.
+
+subfinder: https://github.com/projectdiscovery/subfinder
+ffuf: https://github.com/ffuf/ffuf
 
 # Dockerfile
 A base Dockerfile has been included in the project, from which a proper Dockerfile can be created. The Dockerfile example is located in the "examples" directory, which holds an example application of the framework.
@@ -60,16 +64,15 @@ docker run -it IMAGE_ID script.py https://example.pl
 
 
 # todo
-- clearing /tmp and database
-- validate scenario file
-- threads check
+<!-- - clearing /tmp and database -->
 - make crawling asynchronous
-- change maximum asynchronous calls
-- add wordlist argument (path have to be defined by the user)
 - setup.py
-- cli.py
-- delete try/catch in run_command functions
-- dodac optymalizacje bazy danych (usuwanie doubled records)
+<!-- - dodac optymalizacje bazy danych (usuwanie doubled records) -->
+<!-- - add ignore domain util -->
+- add Dockerfile.base
+- add Dockerfile and modules in the example directory
+<!-- - delete run command in cli.py -->
+<!-- - add to the console info about domains quantity and endpoints -->
 
 # Thanks to
 

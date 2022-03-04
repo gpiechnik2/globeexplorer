@@ -139,4 +139,4 @@ cython_debug/
 
 # tmp files
 tmp/
-globexplorerdb
+globeexplorerdb

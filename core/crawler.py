@@ -2,10 +2,12 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from core.utils import get_https_domain
 
 pages = []
 
-# TODO: change function to make asynchronous crawling with the threading library
+# TODO: change to asynchronous
+
 def get_internal_links_and_crawl(domain, url):
     global pages
     html = requests.get(url).text # fstrings require Python 3.6+ 
@@ -15,6 +17,11 @@ def get_internal_links_and_crawl(domain, url):
             if domain in link.attrs["href"]:
                 if link.attrs["href"] not in pages:
                     new_page = link.attrs["href"]
+                    pages.append(new_page)
+                    get_links(domain, new_page)
+            elif '.html' in link.attrs["href"]:
+                new_page = get_https_domain(domain) + '/' + link.attrs["href"]
+                if new_page not in pages:
                     pages.append(new_page)
                     get_links(domain, new_page)
         

@@ -37,31 +37,44 @@ class Output:
         return self.purple(';')
 
     def print_logo(self):
-        print("""
-     _     _                   _                 
- ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
-| . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
-|_  |_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2
-|___|                     |_|                     
-""")
+        print("     _     _                   _                 ")
+        print(" {}| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ ".format(self.purple("___")))
+        print("{} | . | . | -_| -_|_'_| . | | . |  _| -_|  _|".format(self.purple("| . |")))
+        print("{}_|___|___|___|___|_,_|  _|_|___|_| |___|_|   v1.0 by @gpiechnik2".format(self.purple("|_  |")))
+        print("{}                     |_|                    ".format(self.purple("|___|")))
+        print("                                                 ")
 
-    def print_data(self, domain, ):
+    def print_data(self, scenario, url, subfinder, ffuf, crawler, wordlist, threads, convert):
+        subfinder = self.purple('enabled') if subfinder else self.purple('disabled')
+        ffuf = self.purple('enabled') if ffuf else self.purple('disabled')
+        crawler = self.purple('enabled') if crawler else self.purple('disabled')
+        wordlist = self.purple(wordlist) if wordlist else self.purple('common.txt')
+        convert = self.purple('enabled') if convert else self.purple('disabled')
 
+        purple_semicolon = self.get_purple_semicolon()
+        print('{} [{}] {} {}{}'.format(
+            self.purple('⌾'),
+            self.get_time(),
+            'Scenario data.........:',
+            'scenario: ' + scenario + purple_semicolon + ' url: ' + url + purple_semicolon + ' subfinder: ' + subfinder + purple_semicolon + ' ffuf: ' + ffuf + purple_semicolon + ' crawler: ' + crawler + purple_semicolon + ' wordlist: ' + wordlist + purple_semicolon + ' threads: ' + str(threads) + purple_semicolon + ' convert: ' + convert,
+            purple_semicolon
+        ))
 
-    def print_added_to_queue(self, urls_quantity):
+    def print_added_to_queue(self, tests_quantity, urls_quantity, domains_quantity):
         purple_semicolon = self.get_purple_semicolon()
         print('{} [{}] {} {}{}'.format(
             self.purple('⌾'),
             self.get_time(),
             'Added to the queue....:',
-            str(urls_quantity) + ' tests',
+            self.purple(str(tests_quantity)) + ' tests based on ' + self.purple(str(urls_quantity)) + ' urls of ' + self.purple(str(domains_quantity)) + ' domains',
             purple_semicolon
         ))
-        print('{} [{}] {} {}'.format(
+        print('{} [{}] {} {}{}'.format(
             self.purple('⌾'),
             self.get_time(),
             'Please be patient. If a risk or vulnerability is discovered, we will let you know',
-            purple_semicolon
+            purple_semicolon,
+            '\n'
         ))
 
     def print_vulnerability_found(self, name, process_args, assertion):
@@ -126,6 +139,6 @@ class Output:
             purple_semicolon
         ))
 
-    def print_error_end_exit(error):
+    def print_error_end_exit(self, error):
         print(self.red(error))
         exit()

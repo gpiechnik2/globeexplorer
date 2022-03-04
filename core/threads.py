@@ -126,20 +126,20 @@ class Threads:
                     name = scenario_obj.get_name()
                     commands.append(command)
 
-        self.output.print_added_to_queue(len(commands))
+        self.output.print_added_to_queue(len(commands), len(urls), len(domains))
         return commands
     
 
 class PreconditionThreads:
-    def __init__(self, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, ignore_domain):
+    def __init__(self, url, subfinder_enabled, ffuf_enabled, crawler_enabled, wordlist, convert):
         self.subfinder_enabled = subfinder_enabled
         self.ffuf_enabled = ffuf_enabled
         self.crawler_enabled = crawler_enabled
         self.url = url
-        self.wordlist = wordlist
-        self.ignore_domain = ignore_domain
-        self.output = Output()
+        self.convert = convert
         self.files = Files()
+        self.wordlist = wordlist if wordlist else self.files.get_wordlist_path()
+        self.output = Output()
         self.database = Database()
 
     def run_command(self, command):
@@ -173,7 +173,9 @@ class PreconditionThreads:
                         '"'),
                     re.DOTALL).group(1).split('\\n')
 
+                print('data-test domains')
                 for domain in domains:
+                    print(domain)
                     # sometimes there are empty urls
                     if domain:
                         domain = get_https_domain(domain)
@@ -182,6 +184,7 @@ class PreconditionThreads:
             if error:
                 self.output.print_error_while_running_command(command, error)
         else:
+            domain = get_https_domain(self.url)
             self.database.add_domain(domain)
             self.database.add_url(get_https_domain(domain))
 
@@ -217,9 +220,8 @@ class PreconditionThreads:
     def start_preconditions(self):
         url_without_https = get_without_https_domain(self.url)
         subfinder_cmd = ['subfinder', '-d', url_without_https]
-        ffuf_cmd = ['ffuf', '-u', 'GLOBEEXPLORER_DOMAIN' + '/FUZZ', '-w', self.files.get_wordlist_path(self.wordlist), '-o', self.files.get_ffuf_directory_path() + '/FFUF_DOMAIN.json', '-of', 'json']
+        ffuf_cmd = ['ffuf', '-u', 'GLOBEEXPLORER_DOMAIN' + '/FUZZ', '-w', self.wordlist, '-o', self.files.get_ffuf_directory_path() + '/FFUF_DOMAIN.json', '-of', 'json']
 
-        self.output.print_logo()
         self.run_subfinder(subfinder_cmd)    
         self.run_ffuf(ffuf_cmd)
         self.run_crawler()
