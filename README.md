@@ -141,6 +141,7 @@ To use the tool, use the following command:
 
 ```console
 globeexplorer scenarios.json https://bugspace.pl wordlist.txt 
+
      _     _                   _                 
  ___| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ 
 | . | | . | . | -_| -_|_'_| . | | . |  _| -_|  _|
