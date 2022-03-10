@@ -191,7 +191,7 @@ The framework for the application reconnaissance part uses 2 github repositories
 | ffuf      | Tool used for fuzzing                                                                         | https://github.com/ffuf/ffuf                  |
 
 # TODO
-- Create asynchronous crawling
+- Create asynchronous crawling using [byship](https://github.com/gpiechnik2/byship)
 - Deploy to PyPi
 
 # License
