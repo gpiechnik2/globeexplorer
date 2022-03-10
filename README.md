@@ -21,7 +21,7 @@
 
 Globeexplorer is an extremely extensible framework for automating the running of different types of vulnerability and web risk scanners. The framework is dedicated to **Continous Integration & Continous Security (CI&CS)** and daily **penetration testing of web applications**. Thanks to automation of security scanners we are able to optimize our work and become more efficient.
 
-In the example directory you can find test scenarios with tool modules consisting of 8 security scanners. 
+In the example directory you can find test scenarios with tool modules consisting of 9 security scanners (in which there are over 70 .nse scripts checking over 120 vulnerabilities). 
 
 # Features
 The framework has several distinctive features, which include:
@@ -175,6 +175,11 @@ docker build -t explore -f Dockerfile .
 Then get the docker ID with the `docker images` command and run the tests through it.
 ```
 docker run -it IMAGE_ID scenarios.json https://example.pl wordlist.txt
+```
+
+Then you can copy the test results from the container to the results directory with the following command. You can get the container id with `docker ps -a` command.
+```
+docker cp CONTAINER_ID:/app/tmp ./results
 ```
 
 # Tools used

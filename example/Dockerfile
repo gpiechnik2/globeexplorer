@@ -13,7 +13,7 @@ RUN apk add nmap-scripts
 # SSLyze
 RUN pip3 install --upgrade pip setuptools
 RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo
-RUN python3 ./modules/sslyze/setup.py install
+RUN pip3 install --editable ./modules/sslyze/
 
 # SecretFinder
 RUN pip3 install -r ./modules/secretfinder/requirements.txt
@@ -23,9 +23,11 @@ RUN pip3 install eventlet
 RUN pip3 install click
 RUN pip3 install validators
 
-# SSLyze
-RUN pip3 install --upgrade pip setuptools
-RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo
-RUN python3 ./modules/sslyze/setup.py install
+# ScanQLi
+RUN pip3 install -r ./modules/ScanQLi/requirements.txt
+RUN apk add --update --no-cache py3-numpy
+
+# FDsploit
+RUN pip3 install -r ./modules/FDsploit/requirements.txt
 
 ENTRYPOINT ["python3", "globecli.py"]

@@ -1,7 +1,7 @@
 {
     "scenarios": [
         {
-            "name": "security headers",
+            "name": "securityheaders",
             "type": "risk",
             "module_name": "securityheaders",
             "command": "python3 securityheaders.py GLOBEEXPLORER_URL_WITH_HTTP",
@@ -9,6 +9,14 @@
                 {
                     "type": "contain",
                     "value": "WARN"
+                },
+                {
+                    "type": "contain",
+                    "value": "is missing"
+                },
+                {
+                    "type": "contain",
+                    "value": "FAIL"
                 }
             ],
             "single": true
@@ -36,8 +44,7 @@
                     "value": "CRLF injection detected at the following URLs:"
                 }
             ],
-            "url_type": "params",
-            "single": true
+            "url_type": "params"
         },
         {
             "name": "Damn small JS scanner",
@@ -47,7 +54,7 @@
             "assertions": [
                 {
                     "type": "not_contain",
-                    "value": "0 vulnerabilities found"
+                    "value": "no vulnerabilities found"
                 }
             ],
             "single": true
@@ -68,7 +75,7 @@
         {
             "name": "secretfinder",
             "module_name": "secretfinder",
-            "type": "vulnerability",
+            "type": "risk",
             "command": "python3 SecretFinder.py -i GLOBEEXPLORER_URL_WITH_HTTP -o cli -e",
             "assertions": [
                 {
@@ -92,16 +99,46 @@
             "single": true
         },
         {
-            "name": "nmap vulners.nse",
+            "name": "nmap vulners.nse, *-vuln*, ftp-*, http-cross*, http-shellshock, http-xssed, ssl-*",
             "type": "vulnerability",
-            "command": "nmap GLOBEEXPLORER_URL_WITHOUT_HTTP --script=vulners.nse -sV",
+            "command": "nmap GLOBEEXPLORER_URL_WITHOUT_HTTP --script \"vulners.nse\",\"*-vuln*\",\"ftp-*\",\"http-cross*\",\"http-shellshock\",\"http-xssed\",\"ssl-*\" -sV",
             "assertions": [
                 {
                     "type": "contain",
                     "value": "VULNERABLE"
+                },
+                {
+                    "type": "contain",
+                    "value": "found the following previously reported XSS"
                 }
             ],
             "single": true
+        },
+        {
+            "name": "ScanQLi - SQL Injection",
+            "module_name": "ScanQLi",
+            "type": "vulnerability",
+            "command": "python3 scanqli.py -u 'GLOBEEXPLORER_URL_WITH_HTTP'",
+            "assertions": [
+                {
+                    "type": "not_contain",
+                    "value": "0 vulnerability found in"
+                }
+            ],
+            "url_type": "params"
+        },
+        {
+            "name": "FDSploit - LFI & Path travelsal",
+            "module_name": "FDsploit",
+            "type": "vulnerability",
+            "command":"python3 fdsploit.py -u GLOBEEXPLORER_URL_WITH_HTTP -d 7 -k root -p /etc/passwd",
+            "assertions": [
+                {
+                    "type": "contain",
+                    "value": "Found Keyword"
+                }
+            ],
+            "url_type": "params"
         }
     ]
 }

@@ -87,12 +87,16 @@ class Threads:
         file_name = get_random_file_name()
 
         if error:
-            self.files.create_error_file(output_data, file_name)                        
+            self.files.create_error_file(output_data, file_name)                     
 
         self.files.create_log_file(output_data, file_name)
         self.assert_data(output_data, file_name, scenario_data)
 
     def start_threads(self, commands, threads_quantity):
+
+        # for some reasons the first command in the list is deleted        
+        commands.insert(0, commands[0])
+
         processes = (Popen(cmd["command"], shell=True, stdout=PIPE, stderr=STDOUT, cwd=cmd["module_path"]) for cmd in commands)
         for process in processes:
             running_processes = list(islice(processes, threads_quantity))  # start new processes
@@ -102,12 +106,13 @@ class Threads:
                         output, error = process.communicate()
                     
                         self.handle_post_thread(output, error, process.args)
-                        # print_test_finished?
 
                         running_processes[i] = next(processes, None)  # start new process
                         if running_processes[i] is None: # no new processes
                             del running_processes[i]
                             break
+
+        self.output.print_tests_finished()
 
     def prepare_commands(self):
         urls = self.database.get_urls()
@@ -121,6 +126,7 @@ class Threads:
             for index, url in enumerate(urls_to_test):
                 validate_url = self.validate_url(url)
                 url_type = scenario_obj.get_url_type()
+
                 if url_type in validate_url:
                     command = construct_command(scenario_obj.get_command(url), url)
                     name = scenario_obj.get_name()
@@ -168,6 +174,8 @@ class PreconditionThreads:
 
     def run_subfinder(self, command):
         if self.subfinder_enabled:
+            domain = get_https_domain(self.url)
+            self.database.add_domain(domain)
             self.output.print_initial_module_started('subfinder', 'subdomain enumeration tool')
             output, error = self.run_command(command)
             if output:

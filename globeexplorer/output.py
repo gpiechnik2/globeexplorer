@@ -37,6 +37,7 @@ class Output:
         return self.purple(';')
 
     def print_logo(self):
+        print(" ")
         print("     _     _                   _                 ")
         print(" {}| |___| |_ ___ ___ _ _ ___| |___ ___ ___ ___ ".format(self.purple("___")))
         print("{} | . | . | -_| -_|_'_| . | | . |  _| -_|  _|".format(self.purple("| . |")))
@@ -142,3 +143,12 @@ class Output:
     def print_error_end_exit(self, error):
         print(self.red(error))
         exit()
+
+    def print_tests_finished(self):
+        purple_semicolon = self.get_purple_semicolon()
+        print('{} [{}] {}{}'.format(
+            self.purple('⌾'),
+            self.get_time(),
+            self.green('The launch of the test scenarios has just finished!'),
+            purple_semicolon
+        ))

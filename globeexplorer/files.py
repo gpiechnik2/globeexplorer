@@ -103,6 +103,10 @@ class Files:
                 self.output.print_error_end_exit('Please define the command in {} scenario'.format(
                     index
                 ))
+            if 'single' in scenario and 'url_type' in scenario:
+                self.output.print_error_end_exit('In the {} scenario, both "url_type" and "single" arguments are defined. Decide on one of them'.format(
+                    index
+                ))
             # TODO: do we need that?
             # if 'GLOBEEXPLORER_URL_WITH_HTTP' not in scenario["command"] and 'GLOBEEXPLORER_URL_WITHOUT_HTTP' not in scenario["command"]:
             #     self.output.print_error_end_exit('please define GLOBEEXPLORER_URL_WITH_HTTP or GLOBEEXPLORER_URL_WITHOUT_HTTP in the command in {} scenario'.format(
@@ -135,15 +139,17 @@ class Files:
             self.database.add_url(get_https_domain(url))
 
     def get_scenario_from_file(self, scenarios, command):
+
+        # TODO: Instead of checking commands like this, add a table in the database. This will speed up the whole thing considerably
+        all_urls = self.database.get_domains()
         urls = self.database.get_urls()
+        all_urls += urls
+
         for scenario in scenarios:
-            for url in urls:
+            for url in all_urls:
                 correct_command = construct_command(scenario["command"], url)
                 if correct_command == command:
                     return scenario
-
-        # TODO: dla kazdej domeny z domains powinienem sprawdzac,
-        # poniewaz domena jest dodawana do bazy danych z parsowanych danych
 
     def delete_file(self, path):
         if os.path.exists(path):
